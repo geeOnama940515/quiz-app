@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Trophy, Clock, Target, BookOpen, RotateCcw, CheckCircle, XCircle, Download, FileText } from 'lucide-react';
 import { Question } from '@/lib/questions';
-import { generatePDFReport, generateQuickPDF, QuizResultData } from '@/lib/pdf-generator';
+import type { QuizResultData } from '@/lib/pdf-generator';
 
 interface QuizResultsProps {
   questions: Question[];
@@ -76,6 +76,7 @@ export function QuizResults({ questions, answers, userName, timeSpent, onRestart
     };
 
     try {
+      const { generatePDFReport } = await import('@/lib/pdf-generator');
       await generatePDFReport(resultData);
     } catch (error) {
       console.error('Error generating PDF report:', error);
@@ -96,6 +97,7 @@ export function QuizResults({ questions, answers, userName, timeSpent, onRestart
     };
 
     try {
+      const { generateQuickPDF } = await import('@/lib/pdf-generator');
       await generateQuickPDF(resultData);
     } catch (error) {
       console.error('Error generating PDF summary:', error);
