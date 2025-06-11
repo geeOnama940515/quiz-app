@@ -16,93 +16,20 @@ export interface QuizResultData {
   };
 }
 
-// Dynamic imports for client-side only
-const loadPDFLibraries = async () => {
-  if (typeof window === 'undefined') {
-    throw new Error('PDF generation is only available on the client side');
-  }
-  
-  const [{ default: jsPDF }] = await Promise.all([
-    import('jspdf')
-  ]);
-  
-  return { jsPDF };
-};
-
+// Simple PDF generation using browser's print functionality
 export const generatePDFReport = async (data: QuizResultData): Promise<void> => {
   try {
-    const { jsPDF } = await loadPDFLibraries();
-    
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    let yPosition = margin;
+    // Create a new window with the report content
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      throw new Error('Popup blocked. Please allow popups for this site.');
+    }
 
-    // Helper function to add new page if needed
-    const checkPageBreak = (requiredHeight: number) => {
-      if (yPosition + requiredHeight > pageHeight - margin) {
-        pdf.addPage();
-        yPosition = margin;
-      }
+    const formatTime = (seconds: number) => {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
-
-    // Header
-    pdf.setFontSize(24);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Programming Assessment Report', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 15;
-
-    // Date
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    pdf.text(`Generated on: ${currentDate}`, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 20;
-
-    // Candidate Information
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Candidate Information', margin, yPosition);
-    yPosition += 10;
-
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Name: ${data.userName}`, margin, yPosition);
-    yPosition += 8;
-    pdf.text(`Assessment Type: Programming Knowledge Assessment`, margin, yPosition);
-    yPosition += 8;
-    pdf.text(`Duration: ${Math.floor(data.timeSpent / 60)}:${(data.timeSpent % 60).toString().padStart(2, '0')} minutes`, margin, yPosition);
-    yPosition += 15;
-
-    // Overall Results
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Overall Results', margin, yPosition);
-    yPosition += 10;
-
-    // Score box
-    pdf.setDrawColor(0, 0, 0);
-    pdf.setFillColor(240, 248, 255);
-    pdf.rect(margin, yPosition, pageWidth - 2 * margin, 25, 'F');
-    pdf.rect(margin, yPosition, pageWidth - 2 * margin, 25, 'S');
-
-    pdf.setFontSize(20);
-    pdf.setFont('helvetica', 'bold');
-    const scoreColor = data.score >= 80 ? [34, 197, 94] : data.score >= 60 ? [234, 179, 8] : [239, 68, 68];
-    pdf.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-    pdf.text(`${data.score}%`, margin + 10, yPosition + 15);
-
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`${data.correctAnswers} out of ${data.totalQuestions} questions correct`, margin + 60, yPosition + 10);
 
     const getScoreMessage = (score: number) => {
       if (score >= 90) return 'Outstanding! Excellent programming knowledge.';
@@ -112,130 +39,314 @@ export const generatePDFReport = async (data: QuizResultData): Promise<void> => 
       return 'Needs improvement. Focus on studying the fundamentals.';
     };
 
-    pdf.text(getScoreMessage(data.score), margin + 60, yPosition + 18);
-    yPosition += 35;
-
-    // Topic Performance
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Topic Performance', margin, yPosition);
-    yPosition += 10;
-
-    Object.entries(data.topicStats).forEach(([topic, stats]) => {
-      const percentage = Math.round((stats.correct / stats.total) * 100);
-      
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`${topic}:`, margin, yPosition);
-      
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${stats.correct}/${stats.total} (${percentage}%)`, margin + 60, yPosition);
-      
-      // Progress bar
-      const barWidth = 80;
-      const barHeight = 4;
-      pdf.setDrawColor(200, 200, 200);
-      pdf.rect(margin + 120, yPosition - 3, barWidth, barHeight, 'S');
-      
-      const fillWidth = (percentage / 100) * barWidth;
-      const barColor = percentage >= 80 ? [34, 197, 94] : percentage >= 60 ? [234, 179, 8] : [239, 68, 68];
-      pdf.setFillColor(barColor[0], barColor[1], barColor[2]);
-      pdf.rect(margin + 120, yPosition - 3, fillWidth, barHeight, 'F');
-      
-      yPosition += 12;
-    });
-
-    yPosition += 10;
-
-    // Question Review
-    checkPageBreak(20);
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Question Review', margin, yPosition);
-    yPosition += 15;
-
-    data.questions.forEach((question, index) => {
-      const isCorrect = data.answers[index] === question.correctAnswer;
-      const userAnswer = data.answers[index];
-      
-      checkPageBreak(40);
-      
-      // Question header
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`Q${index + 1}. ${question.topic}`, margin, yPosition);
-      
-      // Correct/Incorrect indicator
-      const statusColor = isCorrect ? [34, 197, 94] : [239, 68, 68];
-      pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
-      pdf.text(isCorrect ? '✓ Correct' : '✗ Incorrect', pageWidth - margin - 30, yPosition);
-      pdf.setTextColor(0, 0, 0);
-      
-      yPosition += 8;
-      
-      // Question text
-      pdf.setFont('helvetica', 'normal');
-      const questionLines = pdf.splitTextToSize(question.question, pageWidth - 2 * margin);
-      pdf.text(questionLines, margin, yPosition);
-      yPosition += questionLines.length * 5 + 5;
-      
-      // Options
-      question.options.forEach((option, optionIndex) => {
-        checkPageBreak(6);
-        
-        const prefix = String.fromCharCode(65 + optionIndex) + '. ';
-        let optionText = prefix + option;
-        
-        if (optionIndex === question.correctAnswer) {
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(34, 197, 94);
-          optionText += ' (Correct Answer)';
-        } else if (optionIndex === userAnswer && !isCorrect) {
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(239, 68, 68);
-          optionText += ' (Your Answer)';
-        } else {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setTextColor(0, 0, 0);
-        }
-        
-        const optionLines = pdf.splitTextToSize(optionText, pageWidth - 2 * margin - 10);
-        pdf.text(optionLines, margin + 5, yPosition);
-        yPosition += optionLines.length * 5;
-        
-        pdf.setTextColor(0, 0, 0);
-      });
-      
-      // Explanation
-      if (question.explanation) {
-        checkPageBreak(15);
-        yPosition += 3;
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'italic');
-        pdf.setTextColor(100, 100, 100);
-        const explanationLines = pdf.splitTextToSize(`Explanation: ${question.explanation}`, pageWidth - 2 * margin);
-        pdf.text(explanationLines, margin, yPosition);
-        yPosition += explanationLines.length * 4;
-        pdf.setTextColor(0, 0, 0);
+    const getTopicColor = (topic: string) => {
+      switch (topic) {
+        case 'HTML': return '#3b82f6';
+        case 'C#': return '#10b981';
+        case 'Algorithm': return '#8b5cf6';
+        default: return '#6b7280';
       }
-      
-      yPosition += 10;
-    });
+    };
 
-    // Footer
-    const totalPages = pdf.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(100, 100, 100);
-      pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-      pdf.text('Programming Assessment Report - Confidential', pageWidth / 2, pageHeight - 5, { align: 'center' });
-    }
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Programming Assessment Report - ${data.userName}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+          }
+          .header h1 {
+            color: #1f2937;
+            margin: 0;
+            font-size: 28px;
+          }
+          .header .date {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 10px;
+          }
+          .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+          }
+          .section h2 {
+            color: #1f2937;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+          }
+          .candidate-info {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+          }
+          .score-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .score-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: ${data.score >= 80 ? '#059669' : data.score >= 60 ? '#d97706' : '#dc2626'};
+            margin: 0;
+          }
+          .score-details {
+            font-size: 16px;
+            color: #374151;
+            margin: 10px 0;
+          }
+          .score-message {
+            font-style: italic;
+            color: #6b7280;
+          }
+          .topic-performance {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+          }
+          .topic-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid var(--topic-color);
+          }
+          .topic-name {
+            font-weight: bold;
+            font-size: 16px;
+          }
+          .topic-score {
+            font-size: 14px;
+            color: #6b7280;
+          }
+          .question-review {
+            margin-top: 30px;
+          }
+          .question-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+          }
+          .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+          }
+          .question-topic {
+            background: var(--topic-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+          }
+          .question-status {
+            font-weight: bold;
+            font-size: 14px;
+          }
+          .correct { color: #059669; }
+          .incorrect { color: #dc2626; }
+          .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 16px;
+          }
+          .options {
+            margin-bottom: 15px;
+          }
+          .option {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 14px;
+          }
+          .option.correct-answer {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+          }
+          .option.user-answer {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+          }
+          .option.normal {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+          }
+          .explanation {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 14px;
+            color: #1e40af;
+            margin-top: 10px;
+          }
+          .explanation strong {
+            color: #1e3a8a;
+          }
+          @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+            .page-break { page-break-before: always; }
+          }
+          .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .print-button:hover {
+            background: #2563eb;
+          }
+        </style>
+      </head>
+      <body>
+        <button class="print-button no-print" onclick="window.print()">Print/Save as PDF</button>
+        
+        <div class="header">
+          <h1>Programming Assessment Report</h1>
+          <div class="date">Generated on: ${new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}</div>
+        </div>
 
-    // Save the PDF
-    const fileName = `${data.userName.replace(/\s+/g, '_')}_Assessment_Report_${new Date().toISOString().split('T')[0]}.pdf`;
-    pdf.save(fileName);
+        <div class="section">
+          <h2>Candidate Information</h2>
+          <div class="candidate-info">
+            <p><strong>Name:</strong> ${data.userName}</p>
+            <p><strong>Assessment Type:</strong> Programming Knowledge Assessment</p>
+            <p><strong>Duration:</strong> ${formatTime(data.timeSpent)} minutes</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Overall Results</h2>
+          <div class="score-box">
+            <div class="score-number">${data.score}%</div>
+            <div class="score-details">${data.correctAnswers} out of ${data.totalQuestions} questions correct</div>
+            <div class="score-message">${getScoreMessage(data.score)}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Topic Performance</h2>
+          <div class="topic-performance">
+            ${Object.entries(data.topicStats).map(([topic, stats]) => {
+              const percentage = Math.round((stats.correct / stats.total) * 100);
+              return `
+                <div class="topic-item" style="--topic-color: ${getTopicColor(topic)}">
+                  <div>
+                    <div class="topic-name">${topic}</div>
+                    <div class="topic-score">${stats.correct}/${stats.total} questions</div>
+                  </div>
+                  <div style="font-weight: bold; font-size: 18px; color: ${getTopicColor(topic)}">${percentage}%</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="section page-break">
+          <h2>Question Review</h2>
+          <div class="question-review">
+            ${data.questions.map((question, index) => {
+              const isCorrect = data.answers[index] === question.correctAnswer;
+              const userAnswer = data.answers[index];
+              
+              return `
+                <div class="question-item" style="--topic-color: ${getTopicColor(question.topic)}">
+                  <div class="question-header">
+                    <div class="question-topic" style="background: ${getTopicColor(question.topic)}">${question.topic}</div>
+                    <div class="question-status ${isCorrect ? 'correct' : 'incorrect'}">
+                      ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </div>
+                  </div>
+                  
+                  <div class="question-text">Q${index + 1}. ${question.question}</div>
+                  
+                  <div class="options">
+                    ${question.options.map((option, optionIndex) => {
+                      let className = 'option normal';
+                      let suffix = '';
+                      
+                      if (optionIndex === question.correctAnswer) {
+                        className = 'option correct-answer';
+                        suffix = ' (Correct Answer)';
+                      } else if (optionIndex === userAnswer && !isCorrect) {
+                        className = 'option user-answer';
+                        suffix = ' (Your Answer)';
+                      }
+                      
+                      return `
+                        <div class="${className}">
+                          ${String.fromCharCode(65 + optionIndex)}. ${option}${suffix}
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                  
+                  ${question.explanation ? `
+                    <div class="explanation">
+                      <strong>Explanation:</strong> ${question.explanation}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <script>
+          // Auto-focus for better printing experience
+          window.onload = function() {
+            document.querySelector('.print-button').focus();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+    
+    // Focus the new window
+    reportWindow.focus();
+    
   } catch (error) {
     console.error('Error generating PDF report:', error);
     throw new Error('Failed to generate PDF report. Please try again.');
@@ -244,44 +355,168 @@ export const generatePDFReport = async (data: QuizResultData): Promise<void> => 
 
 export const generateQuickPDF = async (data: QuizResultData): Promise<void> => {
   try {
-    const { jsPDF } = await loadPDFLibraries();
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      throw new Error('Popup blocked. Please allow popups for this site.');
+    }
+
+    const formatTime = (seconds: number) => {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Quiz Summary - ${data.userName}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 20px;
+          }
+          .header h1 {
+            color: #1f2937;
+            margin: 0;
+            font-size: 24px;
+          }
+          .summary-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .score {
+            font-size: 48px;
+            font-weight: bold;
+            color: ${data.score >= 80 ? '#059669' : data.score >= 60 ? '#d97706' : '#dc2626'};
+            margin: 0;
+          }
+          .details {
+            margin: 20px 0;
+            font-size: 16px;
+          }
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+          }
+          .info-item {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+          }
+          .info-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 5px;
+          }
+          .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+          }
+          .topics {
+            margin-bottom: 30px;
+          }
+          .topic-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid var(--color);
+          }
+          .print-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 20px;
+          }
+          .print-button:hover {
+            background: #2563eb;
+          }
+          @media print {
+            .print-button { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <button class="print-button" onclick="window.print()">Print/Save as PDF</button>
+        
+        <div class="header">
+          <h1>Quiz Results Summary</h1>
+        </div>
+
+        <div class="summary-box">
+          <div class="score">${data.score}%</div>
+          <div class="details">
+            ${data.correctAnswers} out of ${data.totalQuestions} questions correct
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Candidate</div>
+            <div class="info-value">${data.userName}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Time Taken</div>
+            <div class="info-value">${formatTime(data.timeSpent)}</div>
+          </div>
+        </div>
+
+        <div class="topics">
+          <h3>Topic Performance</h3>
+          ${Object.entries(data.topicStats).map(([topic, stats]) => {
+            const percentage = Math.round((stats.correct / stats.total) * 100);
+            const color = topic === 'HTML' ? '#3b82f6' : topic === 'C#' ? '#10b981' : '#8b5cf6';
+            return `
+              <div class="topic-item" style="--color: ${color}">
+                <div>
+                  <strong>${topic}</strong><br>
+                  <small>${stats.correct}/${stats.total} questions</small>
+                </div>
+                <div style="font-weight: bold; font-size: 18px; color: ${color}">${percentage}%</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 40px;">
+          Generated on ${new Date().toLocaleDateString()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+    reportWindow.focus();
     
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    let yPosition = 30;
-
-    // Header
-    pdf.setFontSize(20);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Quiz Results Summary', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 20;
-
-    // Basic info
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Name: ${data.userName}`, 20, yPosition);
-    yPosition += 8;
-    pdf.text(`Score: ${data.score}% (${data.correctAnswers}/${data.totalQuestions})`, 20, yPosition);
-    yPosition += 8;
-    pdf.text(`Time: ${Math.floor(data.timeSpent / 60)}:${(data.timeSpent % 60).toString().padStart(2, '0')}`, 20, yPosition);
-    yPosition += 8;
-    pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, yPosition);
-    yPosition += 15;
-
-    // Topic breakdown
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Topic Performance:', 20, yPosition);
-    yPosition += 8;
-
-    pdf.setFont('helvetica', 'normal');
-    Object.entries(data.topicStats).forEach(([topic, stats]) => {
-      const percentage = Math.round((stats.correct / stats.total) * 100);
-      pdf.text(`${topic}: ${stats.correct}/${stats.total} (${percentage}%)`, 25, yPosition);
-      yPosition += 6;
-    });
-
-    const fileName = `${data.userName.replace(/\s+/g, '_')}_Quiz_Summary.pdf`;
-    pdf.save(fileName);
   } catch (error) {
     console.error('Error generating PDF summary:', error);
     throw new Error('Failed to generate PDF summary. Please try again.');
