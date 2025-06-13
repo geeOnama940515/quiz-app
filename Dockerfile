@@ -35,6 +35,6 @@ COPY --from=builder /app/out .
 # Copy nginx configuration
 COPY nginx-static.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 9015
 
 CMD ["nginx", "-g", "daemon off;"]
