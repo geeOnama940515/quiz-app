@@ -71,6 +71,7 @@ export function QuizInterface({ questions, userName, onComplete }: QuizInterface
     switch (topic) {
       case 'HTML': return 'bg-blue-100 text-blue-800';
       case 'C#': return 'bg-green-100 text-green-800';
+      case 'PHP': return 'bg-orange-100 text-orange-800';
       case 'Algorithm': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -180,7 +181,7 @@ export function QuizInterface({ questions, userName, onComplete }: QuizInterface
         <Card>
           <CardContent className="p-6">
             <h3 className="text-lg font-semibold mb-4">Question Navigator</h3>
-            <div className="grid grid-cols-5 md:grid-cols-10 lg:grid-cols-15 gap-2">
+            <div className="grid grid-cols-6 md:grid-cols-9 lg:grid-cols-12 gap-2">
               {questions.map((_, index) => (
                 <Button
                   key={index}

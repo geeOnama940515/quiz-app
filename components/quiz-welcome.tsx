@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Code, Cpu, Clock, Users } from 'lucide-react';
+import { BookOpen, Code, Cpu, Clock, Users, Server } from 'lucide-react';
 
 interface QuizWelcomeProps {
   onStartQuiz: (name: string) => void;
@@ -33,31 +33,38 @@ export function QuizWelcome({ onStartQuiz }: QuizWelcomeProps) {
             Programming Knowledge Assessment
           </CardTitle>
           <CardDescription className="text-lg text-gray-600">
-            Test your knowledge in HTML, C# basics, and algorithm fundamentals
+            Test your knowledge in HTML, C#, PHP, and algorithm fundamentals
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg">
               <BookOpen className="w-6 h-6 text-blue-600" />
               <div>
                 <h3 className="font-semibold text-blue-900">HTML Basics</h3>
-                <p className="text-sm text-blue-700">5 questions</p>
+                <p className="text-sm text-blue-700">4 questions</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg">
               <Code className="w-6 h-6 text-green-600" />
               <div>
                 <h3 className="font-semibold text-green-900">C# Fundamentals</h3>
-                <p className="text-sm text-green-700">5 questions</p>
+                <p className="text-sm text-green-700">4 questions</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-4 bg-orange-50 rounded-lg">
+              <Server className="w-6 h-6 text-orange-600" />
+              <div>
+                <h3 className="font-semibold text-orange-900">PHP Basics</h3>
+                <p className="text-sm text-orange-700">6 questions</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg">
               <Cpu className="w-6 h-6 text-purple-600" />
               <div>
                 <h3 className="font-semibold text-purple-900">Algorithms</h3>
-                <p className="text-sm text-purple-700">5 questions</p>
+                <p className="text-sm text-purple-700">4 questions</p>
               </div>
             </div>
           </div>
@@ -68,8 +75,8 @@ export function QuizWelcome({ onStartQuiz }: QuizWelcomeProps) {
               <div>
                 <h4 className="font-semibold text-amber-900">Assessment Details</h4>
                 <ul className="text-sm text-amber-800 mt-2 space-y-1">
-                  <li>• 15 multiple-choice questions total</li>
-                  <li>• Approximately 20-30 minutes to complete</li>
+                  <li>• 18 multiple-choice questions total</li>
+                  <li>• Approximately 25-35 minutes to complete</li>
                   <li>• Each question has one correct answer</li>
                   <li>• Results provided immediately upon completion</li>
                 </ul>

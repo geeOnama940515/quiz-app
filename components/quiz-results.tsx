@@ -44,6 +44,7 @@ export function QuizResults({ questions, answers, userName, timeSpent, onRestart
   const topicStats = {
     'HTML': { correct: 0, total: 0 },
     'C#': { correct: 0, total: 0 },
+    'PHP': { correct: 0, total: 0 },
     'Algorithm': { correct: 0, total: 0 }
   };
 
@@ -58,6 +59,7 @@ export function QuizResults({ questions, answers, userName, timeSpent, onRestart
     switch (topic) {
       case 'HTML': return 'bg-blue-100 text-blue-800';
       case 'C#': return 'bg-green-100 text-green-800';
+      case 'PHP': return 'bg-orange-100 text-orange-800';
       case 'Algorithm': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }

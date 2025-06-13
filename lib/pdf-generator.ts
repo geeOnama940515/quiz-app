@@ -43,6 +43,7 @@ export const generatePDFReport = async (data: QuizResultData): Promise<void> => 
       switch (topic) {
         case 'HTML': return '#3b82f6';
         case 'C#': return '#10b981';
+        case 'PHP': return '#f97316';
         case 'Algorithm': return '#8b5cf6';
         default: return '#6b7280';
       }
@@ -493,7 +494,7 @@ export const generateQuickPDF = async (data: QuizResultData): Promise<void> => {
           <h3>Topic Performance</h3>
           ${Object.entries(data.topicStats).map(([topic, stats]) => {
             const percentage = Math.round((stats.correct / stats.total) * 100);
-            const color = topic === 'HTML' ? '#3b82f6' : topic === 'C#' ? '#10b981' : '#8b5cf6';
+            const color = topic === 'HTML' ? '#3b82f6' : topic === 'C#' ? '#10b981' : topic === 'PHP' ? '#f97316' : '#8b5cf6';
             return `
               <div class="topic-item" style="--color: ${color}">
                 <div>

@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Programming Knowledge Assessment - Intern Quiz',
-  description: 'Test your knowledge in HTML, C# basics, and algorithm fundamentals. Designed for programming interns.',
+  description: 'Test your knowledge in HTML, C#, PHP, and algorithm fundamentals. Designed for programming interns.',
 };
 
 export default function RootLayout({

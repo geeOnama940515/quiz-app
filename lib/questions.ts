@@ -1,6 +1,6 @@
 export interface Question {
   id: number;
-  topic: 'HTML' | 'C#' | 'Algorithm';
+  topic: 'HTML' | 'C#' | 'Algorithm' | 'PHP';
   question: string;
   options: string[];
   correctAnswer: number;
@@ -46,18 +46,10 @@ export const questions: Question[] = [
     correctAnswer: 2,
     explanation: '<h1> defines the most important heading, while <h6> defines the least important heading.'
   },
-  {
-    id: 5,
-    topic: 'HTML',
-    question: 'Which HTML element is used to specify a footer for a document?',
-    options: ['<bottom>', '<section>', '<footer>', '<end>'],
-    correctAnswer: 2,
-    explanation: 'The <footer> element defines a footer for a document or section.'
-  },
   
   // C# Questions
   {
-    id: 6,
+    id: 5,
     topic: 'C#',
     question: 'Which of the following is the correct way to declare a variable in C#?',
     options: [
@@ -70,7 +62,7 @@ export const questions: Question[] = [
     explanation: 'In C#, variables are declared using the data type followed by the variable name and optionally initialized with a value.'
   },
   {
-    id: 7,
+    id: 6,
     topic: 'C#',
     question: 'What is the default access modifier for a class in C#?',
     options: ['public', 'private', 'internal', 'protected'],
@@ -78,7 +70,7 @@ export const questions: Question[] = [
     explanation: 'The default access modifier for a class in C# is internal, which means it can be accessed within the same assembly.'
   },
   {
-    id: 8,
+    id: 7,
     topic: 'C#',
     question: 'Which keyword is used to inherit a class in C#?',
     options: ['extends', 'inherits', ':', 'implements'],
@@ -86,7 +78,7 @@ export const questions: Question[] = [
     explanation: 'In C#, the colon (:) is used to indicate inheritance from a base class or implementation of interfaces.'
   },
   {
-    id: 9,
+    id: 8,
     topic: 'C#',
     question: 'What is the correct way to create an array in C#?',
     options: [
@@ -98,18 +90,70 @@ export const questions: Question[] = [
     correctAnswer: 0,
     explanation: 'Arrays in C# are declared using square brackets after the data type, followed by the new keyword and array size.'
   },
+  
+  // PHP Questions
+  {
+    id: 9,
+    topic: 'PHP',
+    question: 'What does PHP stand for?',
+    options: [
+      'Personal Home Page',
+      'PHP: Hypertext Preprocessor',
+      'Private Home Page',
+      'Professional Hypertext Processor'
+    ],
+    correctAnswer: 1,
+    explanation: 'PHP originally stood for "Personal Home Page" but now stands for "PHP: Hypertext Preprocessor" (a recursive acronym).'
+  },
   {
     id: 10,
-    topic: 'C#',
-    question: 'Which of the following is NOT a value type in C#?',
-    options: ['int', 'bool', 'string', 'char'],
+    topic: 'PHP',
+    question: 'Which symbol is used to declare a variable in PHP?',
+    options: ['&', '#', '$', '@'],
     correctAnswer: 2,
-    explanation: 'String is a reference type in C#, while int, bool, and char are value types.'
+    explanation: 'In PHP, all variables are prefixed with the dollar sign ($) symbol.'
+  },
+  {
+    id: 11,
+    topic: 'PHP',
+    question: 'How do you start a PHP script?',
+    options: ['<php>', '<?php', '<script>', '<%php%>'],
+    correctAnswer: 1,
+    explanation: 'PHP scripts start with the opening tag <?php and can optionally end with ?>'
+  },
+  {
+    id: 12,
+    topic: 'PHP',
+    question: 'Which function is used to include a file in PHP?',
+    options: ['import()', 'include()', 'require_file()', 'load()'],
+    correctAnswer: 1,
+    explanation: 'The include() function is used to include and evaluate a specified file. There\'s also require(), include_once(), and require_once().'
+  },
+  {
+    id: 13,
+    topic: 'PHP',
+    question: 'What is the correct way to create an associative array in PHP?',
+    options: [
+      '$arr = array("key" => "value");',
+      '$arr = ["key" = "value"];',
+      '$arr = {"key": "value"};',
+      '$arr = ("key" -> "value");'
+    ],
+    correctAnswer: 0,
+    explanation: 'Associative arrays in PHP use the => operator to associate keys with values.'
+  },
+  {
+    id: 14,
+    topic: 'PHP',
+    question: 'Which superglobal variable contains form data sent via POST method?',
+    options: ['$_GET', '$_POST', '$_REQUEST', '$_FORM'],
+    correctAnswer: 1,
+    explanation: '$_POST is a superglobal variable that contains data sent to the script via HTTP POST method.'
   },
   
   // Algorithm Questions
   {
-    id: 11,
+    id: 15,
     topic: 'Algorithm',
     question: 'What is the time complexity of binary search?',
     options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
@@ -117,7 +161,7 @@ export const questions: Question[] = [
     explanation: 'Binary search has O(log n) time complexity because it eliminates half of the remaining elements in each iteration.'
   },
   {
-    id: 12,
+    id: 16,
     topic: 'Algorithm',
     question: 'Which sorting algorithm has the best average-case time complexity?',
     options: ['Bubble Sort', 'Quick Sort', 'Selection Sort', 'Insertion Sort'],
@@ -125,7 +169,7 @@ export const questions: Question[] = [
     explanation: 'Quick Sort has an average-case time complexity of O(n log n), which is better than the O(n²) of the other options.'
   },
   {
-    id: 13,
+    id: 17,
     topic: 'Algorithm',
     question: 'What data structure uses LIFO (Last In, First Out) principle?',
     options: ['Queue', 'Array', 'Stack', 'Linked List'],
@@ -133,20 +177,12 @@ export const questions: Question[] = [
     explanation: 'Stack follows the LIFO principle where the last element added is the first one to be removed.'
   },
   {
-    id: 14,
+    id: 18,
     topic: 'Algorithm',
     question: 'Which of the following is a stable sorting algorithm?',
     options: ['Quick Sort', 'Heap Sort', 'Merge Sort', 'Selection Sort'],
     correctAnswer: 2,
     explanation: 'Merge Sort is stable because it maintains the relative order of equal elements during sorting.'
-  },
-  {
-    id: 15,
-    topic: 'Algorithm',
-    question: 'What is the space complexity of recursive factorial function?',
-    options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
-    correctAnswer: 2,
-    explanation: 'Recursive factorial has O(n) space complexity due to the call stack growing linearly with the input size.'
   }
 ];
 
