@@ -36,7 +36,7 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/out ./out
 COPY --from=builder /app/package.json ./package.json
 
-# Since we're using static export, we'll serve the files with a simple HTTP server
+# Since we're using static export, we\'ll serve the files with a simple HTTP server
 RUN npm install -g serve
 
 USER nextjs
