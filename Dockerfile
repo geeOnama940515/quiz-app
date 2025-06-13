@@ -22,19 +22,25 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Build the application
 RUN npm run build
 
-# Production image, copy all the files and run nginx
-FROM nginx:alpine AS runner
-WORKDIR /usr/share/nginx/html
+# Production image, copy all the files and run next start
+FROM base AS runner
+WORKDIR /app
 
-# Remove default nginx static assets
-RUN rm -rf ./*
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
 # Copy the built application
-COPY --from=builder /app/out .
+COPY --from=builder /app/out ./out
+COPY --from=builder /app/package.json ./package.json
 
-# Copy nginx configuration
-COPY nginx-static.conf /etc/nginx/conf.d/default.conf
+# Since we're using static export, we'll serve the files with a simple HTTP server
+RUN npm install -g serve
+
+USER nextjs
 
 EXPOSE 9015
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "-s", "out", "-l", "9015"]
