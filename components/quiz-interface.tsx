@@ -99,7 +99,7 @@ export function QuizInterface({ questions, userName, onComplete }: QuizInterface
               </div>
             </div>
             <div className="mt-4">
-              <Progress value={progress} className="h-2" />
+              <Progress value={progress} max={100} className="h-2" />
               <p className="text-sm text-gray-500 mt-2">
                 Question {currentQuestion + 1} of {questions.length}
               </p>
