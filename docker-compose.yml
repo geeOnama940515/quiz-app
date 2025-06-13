@@ -12,36 +12,6 @@ services:
     environment:
       - NODE_ENV=production
 
-  # Optional: Add a database for storing results (PostgreSQL)
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: quiz_results
-      POSTGRES_USER: quiz_user
-      POSTGRES_PASSWORD: quiz_password_change_in_production
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./supabase/migrations/20250611070734_plain_coast.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
-    container_name: quiz-postgres
-    profiles:
-      - with-database
-
-  # Optional: Add Redis for session management
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
-    container_name: quiz-redis
-    profiles:
-      - with-cache
-
-volumes:
-  postgres_data:
-
 networks:
   default:
     name: quiz-network
